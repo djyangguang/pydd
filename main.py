@@ -3,7 +3,7 @@
 """
 Created on Sun Aug  4 01:01:37 2019
 main 
-@author: chineseocr
+@author: yg
 """
 from text.detector.detectors import TextDetector
 from apphelper.image import rotate_cut_img,sort_box

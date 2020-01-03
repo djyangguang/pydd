@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-@author: lywen
+@author: yg
 """
 import os
 import json
@@ -106,8 +106,8 @@ from main import TextOcrModel
 model =  TextOcrModel(ocr,text_detect,angle_detect)
     
 
-billList = ['通用OCR','火车票','身份证']
-
+#billList = ['通用OCR','火车票','身份证']
+billList = ['红单OCR']
 class OCR:
     """通用OCR识别"""
 
@@ -118,7 +118,7 @@ class OCR:
         post['H'] = 1000
         post['width'] = 600
         post['W'] = 600
-        post['billList'] = billList
+        post['billList'] = billList # 界面中的按钮。
         return render.ocr(post)
 
     def POST(self):
@@ -172,7 +172,7 @@ class OCR:
         
         
         
-                    if billModel=='' or billModel=='通用OCR' :
+                    if billModel=='' or billModel=='红单OCR' :
                         result = union_rbox(result,0.2)
                         res = [{'text':x['text'],
                                 'name':str(i),

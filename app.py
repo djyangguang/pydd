@@ -41,9 +41,9 @@ if yoloTextFlag=='opencv':
 elif yoloTextFlag=='darknet':
     scale,maxScale = IMGSIZE
     from text.darknet_detect import text_detect
-elif yoloTextFlag=='keras':
+elif yoloTextFlag=='keras':# 使用 慢 去掉这个模型
     scale,maxScale = IMGSIZE[0],2048
-    from text.keras_detect import  text_detect
+    from text.keras_detect import  text_detect # 文本识别
 else:
      print( "err,text engine in keras\opencv\darknet")
      
@@ -71,7 +71,7 @@ else:
     elif ocrFlag=='torch':
         from crnn.network_torch import CRNN
         if chineseModel:
-            alphabet = alphabetChinese
+            alphabet = alphabetChinese # crnn keys 汉字 + 数字（手写?）
             if LSTMFLAG:
                 ocrModel = ocrModelTorchLstm
             else:
@@ -88,16 +88,51 @@ else:
     else:
         print( "err,ocr engine in keras\opencv\darknet")
      
-    nclass = len(alphabet)+1   
+    nclass = len(alphabet)+1  # 5530 汉字+数子
     if ocrFlag=='opencv':
         crnn = CRNN(alphabet=alphabet)
     else:
-        crnn = CRNN( 32, 1, nclass, 256, leakyRelu=False,lstmFlag=LSTMFLAG,GPU=GPU,alphabet=alphabet)
+        crnn = CRNN( 32, 1, nclass, 256, leakyRelu=False,lstmFlag=LSTMFLAG,GPU=GPU,alphabet=alphabet) # 进
     if os.path.exists(ocrModel):
         crnn.load_weights(ocrModel)
     else:
         print("download model or tranform model with tools!")
-        
+        '''
+        CRNN(
+            (cnn): Sequential(
+            (conv0): Conv2d(1, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (relu0): ReLU(inplace)
+        (pooling0): MaxPool2d(kernel_size=2, stride=2, padding=0, dilation=1, ceil_mode=False)
+        (conv1): Conv2d(64, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (relu1): ReLU(inplace)
+        (pooling1): MaxPool2d(kernel_size=2, stride=2, padding=0, dilation=1, ceil_mode=False)
+        (conv2): Conv2d(128, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (batchnorm2): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (relu2): ReLU(inplace)
+        (conv3): Conv2d(256, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (relu3): ReLU(inplace)
+        (pooling2): MaxPool2d(kernel_size=(2, 2), stride=(2, 1), padding=(0, 1), dilation=1, ceil_mode=False)
+        (conv4): Conv2d(256, 512, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (batchnorm4): BatchNorm2d(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (relu4): ReLU(inplace)
+        (conv5): Conv2d(512, 512, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (relu5): ReLU(inplace)
+        (pooling3): MaxPool2d(kernel_size=(2, 2), stride=(2, 1), padding=(0, 1), dilation=1, ceil_mode=False)
+        (conv6): Conv2d(512, 512, kernel_size=(2, 2), stride=(1, 1))
+        (batchnorm6): BatchNorm2d(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (relu6): ReLU(inplace)
+        )
+        (rnn): Sequential(
+            (0): BidirectionalLSTM(
+            (rnn): LSTM(512, 256, bidirectional=True)
+        (embedding): Linear(in_features=512, out_features=256, bias=True)
+        )
+        (1): BidirectionalLSTM(
+            (rnn): LSTM(256, 256, bidirectional=True)
+        (embedding): Linear(in_features=512, out_features=5530, bias=True)
+        )
+        )
+        '''
     ocr = crnn.predict_job
     
    
@@ -106,7 +141,6 @@ from main import TextOcrModel
 model =  TextOcrModel(ocr,text_detect,angle_detect)
     
 
-#billList = ['通用OCR','火车票','身份证']
 billList = ['红单OCR']
 class OCR:
     """通用OCR识别"""
@@ -123,7 +157,7 @@ class OCR:
 
     def POST(self):
         t = time.time()
-        data = web.data()
+        data = web.data()#图片
         uidJob = uuid.uuid1().__str__()
         
         data = json.loads(data)
@@ -186,12 +220,12 @@ class OCR:
                                } for i,x in enumerate(result)]
                         res = adjust_box_to_origin(img,angle, res)##修正box
         
-                    elif billModel=='火车票':
+                    elif billModel=='回签单':
                         res = trainTicket.trainTicket(result)
                         res = res.res
                         res =[ {'text':res[key],'name':key,'box':{}} for key in res]
         
-                    elif billModel=='身份证':
+                    elif billModel=='货运收条':
         
                         res = idcard.idcard(result)
                         res = res.res
